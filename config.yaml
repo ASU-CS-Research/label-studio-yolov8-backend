@@ -1,4 +1,4 @@
-MODEL_PATH: "./stripe-seg.pt"
+MODEL_PATH: "./models/stripe-seg.pt"
 MODEL_TYPE: "seg"
 MODEL_NAME: "stripe-seg.pt"
 MODEL_VERSION: "v1"
