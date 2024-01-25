@@ -1,0 +1,5 @@
+MODEL_PATH: "./stripe-seg.pt"
+MODEL_TYPE: "seg"
+MODEL_NAME: "stripe-seg.pt"
+MODEL_VERSION: "v1"
+MODEL_CLASSES: ["stripe"]
