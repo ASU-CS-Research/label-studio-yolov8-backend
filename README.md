@@ -68,4 +68,4 @@ And you would have the segmentation model on port 9090 and the detect model on p
 
 
 ## Training
-Model training is **not included** in this project. This will probably be added later.
+Model training is **not included** in this project. This may be added later.
