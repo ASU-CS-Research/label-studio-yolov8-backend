@@ -30,32 +30,42 @@ This project contains an ML backend for classifying pills in Label Studio. It us
 
 
 ## Getting Started
-1. Clone the Label Studio Machine Learning Backend git repository. From the command line, run the following:
+1. Clone the Label Studio Machine Learning Backend git repository. 
 
-    ```git clone https://github.com/seblful/label-studio-yolov8-backend.git```
+2. Import or create a new `credentials.yaml` file
 
-2. Paste you Label Studio API key in ```model.py```
+3. Navigate into the `label-studio-yolov8-backend` directory if you have not already.
 
-3. To use this backend, you'll need to have Docker and docker-compose installed. Then, run the following command to start the backend:
+4. Run the command:
+   
+    ```label-studio-ml start . -p <port> --kwarg config_path=<path_to_config_file> credentials_path=<path_to_credentials_file>```
+   
+    The `.` refers to starting the yolov8 backend in the current directory. The two kwargs allow you to specify a destination for your configuration and credentials yaml files, and default to `./config.yaml` and `./credentials.yaml`. The port defaults to 9090. This will start the backend.
 
-    ```docker-compose up```
+    Check if the backend is running (on port 9090 for example):
 
-This will start the backend on localhost:9090.
+    ```$ curl http://localhost:9090/health```
 
-Check if it works:
+    ```{"status":"UP"}```
 
-```$ curl http://localhost:9090/health```
-
-```{"status":"UP"}```
-
-4. Connect running backend to Label Studio:
+5. Connect running backend to Label Studio:
 
     ```label-studio start --init new_project --ml-backends http://localhost:9090```
 
 5. Start the labeling process.
 
+## Running multiple backends at a time
+
+This backend supports running multiple backends at a time through the keyword arguments. For example you could run:
+
+```label-studio-ml start . -p 9090 --kwarg config_path=./config_files/config-seg.yaml credentials_path=./credentials.yaml```
+
+And
+
+```label-studio-ml start . -p 9091 --kwarg config_path=./config_files/config-detect.yaml credentials_path=./credentials.yaml```
+
+And you would have the segmentation model on port 9090 and the detect model on port 9091. The only value that must change is the port, as port 9090 would be busy after running the first command, but you most likely need to change the config path as well if you would like to have a different model running.
+
+
 ## Training
 Model training is **not included** in this project. This will probably be added later.
-
-## Contributing
-Contributions to this project are welcome. To contribute, please submit an issue or pull request.
