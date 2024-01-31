@@ -40,8 +40,7 @@ INCORRECT_MODEL_TYPE_MSG = (f'Incorrect model type. Please specify either "{Mode
 # Initialize class inherited from LabelStudioMLBase
 class YOLOv8Model(LabelStudioMLBase):
     def __init__(self, **kwargs):
-        # Call base class constructor
-        super(YOLOv8Model, self).__init__(**kwargs)
+        logger.info('Initializaing YOLOv8Model')
         # Verify and parse credentials file
         credentials_path = kwargs.get('credentials_path', 'credentials.yaml')
         self._ls_url, self._ls_api_token = self._verify_and_parse_credentials_file(credentials_path)
@@ -49,6 +48,13 @@ class YOLOv8Model(LabelStudioMLBase):
         config_path = kwargs.get('config_path', 'config.yaml')
         self._model_name, self._model_version, self._model_type, self._model_classes, self._model_path = \
             self._verify_and_parse_config(config_path)
+        self._model_version_full = f"{self._model_name}-{self._model_version}"
+        kwargs["model_version"] = self._model_version_full
+        # Call base class constructor
+        super(YOLOv8Model, self).__init__(**kwargs)
+        # Initialize logger
+        os.makedirs('logs', exist_ok=True)
+        logger.add(f'logs/log_{self._model_version_full}.log', rotation='500 MB', level='INFO')
         # Initialize self variables (PolygonLabels or RectangleLabels)
         control_type = 'PolygonLabels' if self._model_type == ModelType.SEG else 'RectangleLabels'
         self.from_name, self.to_name, self.value, self.classes = get_single_tag_keys(
@@ -135,6 +141,7 @@ class YOLOv8Model(LabelStudioMLBase):
         results = self.model.predict(image)
         
         # Getting mask segments, boxes from model prediction
+        count = 0
         for result in results:
             if self._model_type == ModelType.DETECT:
                 for i, box in enumerate(result.boxes):
@@ -156,6 +163,8 @@ class YOLOv8Model(LabelStudioMLBase):
                             "rectanglelabels": [self.labels[int(box.cls.item())]]
                         }
                     })
+                    score += box.conf.item()
+                    count += 1
             else:
                 for i, (box, segm) in enumerate(zip(result.boxes, result.masks.xy)):
                     polygon_points = segm / np.array([original_width, original_height]) * 100
@@ -176,16 +185,19 @@ class YOLOv8Model(LabelStudioMLBase):
                             "polygonlabels": [self.labels[int(box.cls.item())]]
                         }})
 
-                    # Calculating score
+                    # Calculating score (average of all scores, this is just the summing step)
                     score += box.conf.item()
+                    count += 1
 
-        logger.info("Returned Prediction")
+        logger.info("Returning Prediction")
 
         # Dict with final dicts with predictions
+        score = float(score / (count + 1))
+        print(f'Score: {score}')
         final_prediction = [{
             "result": predictions,
-            "score": score / (i + 1),
-            "model_version": f"{self._model_name}-{self._model_version}"
+            "score": score,
+            "model_version": self._model_version_full
         }]
         return final_prediction
     
