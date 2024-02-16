@@ -116,7 +116,7 @@ class YOLOv8Model(LabelStudioMLBase):
 
         # Getting URL of the image
         image_url = task['data'][self.value]
-        full_url = self._ls_url + image_url
+        full_url = self._ls_url + image_url if image_url.startswith('/') else image_url
         logger.info("Received Request")
         logger.debug(f"Image URL: {full_url}")
 
